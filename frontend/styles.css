@@ -1,0 +1,134 @@
+.block-container {
+  padding-top: 1.5rem;
+  padding-bottom: 2rem;
+}
+
+.app-title {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 0.2rem;
+}
+
+.app-subtitle {
+  opacity: 0.85;
+  margin-bottom: 1rem;
+}
+
+.top-nav-wrap {
+  margin-top: 0.15rem;
+}
+
+.top-nav-stats {
+  text-align: right;
+  font-size: 0.86rem;
+  opacity: 0.85;
+  margin-top: 0.1rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+div[data-testid="stRadio"] > div {
+  background: linear-gradient(
+    90deg,
+    rgba(120, 120, 120, 0.06),
+    rgba(120, 120, 120, 0.02)
+  );
+  border: 1px solid rgba(120, 120, 120, 0.2);
+  border-radius: 999px;
+  padding: 0.28rem;
+}
+
+div[data-testid="stRadio"] [role="radiogroup"] {
+  gap: 0.28rem;
+}
+
+div[data-testid="stRadio"] input[type="radio"] {
+  display: none;
+}
+
+div[data-testid="stRadio"] label > div:first-child {
+  display: none;
+}
+
+div[data-testid="stRadio"] label {
+  border-radius: 999px !important;
+  border: 1px solid rgba(120, 120, 120, 0.22) !important;
+  background: rgba(255, 255, 255, 0.32) !important;
+  min-height: 2.1rem;
+  padding: 0.25rem 0.95rem !important;
+  transition: all 0.16s ease;
+}
+
+div[data-testid="stRadio"] label p {
+  font-size: 0.95rem !important;
+  font-weight: 500 !important;
+  line-height: 1.1;
+}
+
+div[data-testid="stRadio"] label:hover {
+  border-color: rgba(120, 120, 120, 0.4) !important;
+  background: rgba(255, 255, 255, 0.42) !important;
+  transform: translateY(-0.5px);
+}
+
+div[data-testid="stRadio"] label:has(input:checked) {
+  border-color: rgba(255, 75, 75, 0.42) !important;
+  background: rgba(255, 75, 75, 0.18) !important;
+  box-shadow: 0 0 0 1px rgba(255, 75, 75, 0.12) inset;
+}
+
+div[data-testid="stRadio"] label:has(input:checked) p {
+  font-weight: 650 !important;
+}
+
+.section-card {
+  border: 1px solid rgba(120, 120, 120, 0.25);
+  border-radius: 12px;
+  padding: 0.9rem 1rem;
+  margin-bottom: 0.7rem;
+  background: rgba(120, 120, 120, 0.04);
+}
+
+.muted {
+  font-size: 0.9rem;
+  opacity: 0.8;
+}
+
+.tender-card {
+  border: 1px solid rgba(120, 120, 120, 0.25);
+  border-radius: 12px;
+  padding: 0.85rem 1rem;
+  margin-bottom: 0.7rem;
+  background: rgba(120, 120, 120, 0.03);
+}
+
+.tender-title {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.tender-meta {
+  font-size: 0.88rem;
+  opacity: 0.85;
+  margin-bottom: 0.25rem;
+}
+
+.tender-desc {
+  font-size: 0.92rem;
+  margin: 0.35rem 0;
+}
+
+.tender-link {
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+@media (max-width: 980px) {
+  .top-nav-stats {
+    text-align: left;
+    margin-top: 0.45rem;
+  }
+}
