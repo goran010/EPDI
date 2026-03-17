@@ -215,11 +215,13 @@ def generate_summary(natjecaj_id: int, db: Session = Depends(get_db)):
 def trigger_scraping(source: Optional[str] = None):
     """Trigger web scraping manually"""
     try:
-        if source:
+        normalized_source = source.strip() if source else None
+
+        if normalized_source and normalized_source.lower() not in {"all", "*"}:
             # Run single scraper
-            results = scraper_manager.run_single_scraper(source)
+            results = scraper_manager.run_single_scraper(normalized_source)
             return {
-                "message": f"Scraping completed for {source}",
+                "message": f"Scraping completed for {normalized_source}",
                 "count": len(results)
             }
         else:

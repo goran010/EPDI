@@ -33,6 +33,7 @@ class Settings(BaseSettings):
     class Config:
         env_file = ".env"
         case_sensitive = False
+        extra = "ignore"
 
 
 # Global settings instance
@@ -60,6 +61,12 @@ DATA_SOURCES = {
             "name": "Horizon Europe",
             "url": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/home",
             "type": "dynamic",
+            "enabled": True
+        },
+        {
+            "name": "CORDIS",
+            "url": "https://cordis.europa.eu/search",
+            "type": "json_api",
             "enabled": True
         }
     ]

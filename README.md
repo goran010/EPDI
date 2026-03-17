@@ -101,7 +101,7 @@ python src/database/database.py
 **Backend (FastAPI):**
 
 ```bash
-python src/api/main.py
+python -m uvicorn src.api.main:app --host 127.0.0.1 --port 8000
 # API dostupan na: http://localhost:8000
 # Swagger docs: http://localhost:8000/docs
 ```

@@ -132,6 +132,8 @@ def show_search_page():
 
     if "search_results" not in st.session_state:
         st.session_state.search_results = []
+    if "search_page" not in st.session_state:
+        st.session_state.search_page = 0
 
     with st.form("search_form", clear_on_submit=False):
         col1, col2, col3 = st.columns(3)
@@ -158,12 +160,31 @@ def show_search_page():
             kategorija=kat,
             podrucje=pod,
         )
+        st.session_state.search_page = 0  # reset to first page on new search
 
     results = st.session_state.search_results
     if results:
+        PAGE_SIZE = 10
+        total = len(results)
+        total_pages = (total + PAGE_SIZE - 1) // PAGE_SIZE
+        page = st.session_state.search_page
+
         st.markdown("---")
-        st.subheader(f"Rezultati ({len(results)})")
-        for nat in results:
+
+        # Header row: title left, page info right
+        hcol, pcol = st.columns([3, 1])
+        with hcol:
+            st.subheader(f"Rezultati ({total})")
+        with pcol:
+            st.markdown(
+                f'<div style="text-align:right;padding-top:0.6rem;font-size:0.9rem;opacity:0.8">'  
+                f'Stranica {page + 1} / {total_pages}</div>',
+                unsafe_allow_html=True,
+            )
+
+        # Render current page items
+        page_items = results[page * PAGE_SIZE : (page + 1) * PAGE_SIZE]
+        for nat in page_items:
             opis = nat.get('opis') or "Bez opisa"
             short_opis = opis[:220] + ("..." if len(opis) > 220 else "")
             rok = parse_rok(nat.get("rok_prijave"))
@@ -183,6 +204,39 @@ def show_search_page():
                 ),
                 unsafe_allow_html=True,
             )
+
+        # Pagination controls
+        if total_pages > 1:
+            st.markdown("")
+            nav_cols = st.columns([1, 1, 4, 1, 1])
+            with nav_cols[0]:
+                if st.button("⟨⟨", disabled=page == 0, use_container_width=True, key="pg_first"):
+                    st.session_state.search_page = 0
+                    st.rerun()
+            with nav_cols[1]:
+                if st.button("⟨", disabled=page == 0, use_container_width=True, key="pg_prev"):
+                    st.session_state.search_page = page - 1
+                    st.rerun()
+            with nav_cols[2]:
+                # Clickable page number buttons (show up to 7 around current)
+                half = 3
+                start_p = max(0, min(page - half, total_pages - 2 * half - 1))
+                end_p = min(total_pages, start_p + 2 * half + 1)
+                btn_cols = st.columns(end_p - start_p)
+                for i, p_idx in enumerate(range(start_p, end_p)):
+                    label = f"**{p_idx + 1}**" if p_idx == page else str(p_idx + 1)
+                    if btn_cols[i].button(label, key=f"pg_{p_idx}", use_container_width=True):
+                        st.session_state.search_page = p_idx
+                        st.rerun()
+            with nav_cols[3]:
+                if st.button("⟩", disabled=page >= total_pages - 1, use_container_width=True, key="pg_next"):
+                    st.session_state.search_page = page + 1
+                    st.rerun()
+            with nav_cols[4]:
+                if st.button("⟩⟩", disabled=page >= total_pages - 1, use_container_width=True, key="pg_last"):
+                    st.session_state.search_page = total_pages - 1
+                    st.rerun()
+
     elif submitted:
         st.info("Nema rezultata za zadane kriterije.")
 

@@ -39,9 +39,13 @@ def _safe_get(url: str, params: Optional[Dict[str, Any]] = None) -> Optional[Any
     return None
 
 
-def _safe_post(url: str) -> bool:
+def _safe_post(
+    url: str,
+    params: Optional[Dict[str, Any]] = None,
+    timeout: int = 30,
+) -> bool:
     try:
-        response = requests.post(url, timeout=30)
+        response = requests.post(url, params=params, timeout=timeout)
         return response.status_code == 200
     except requests.RequestException:
         return False
@@ -113,7 +117,11 @@ def search_natjecaji(
 
 
 def trigger_scraping() -> bool:
-    return _safe_post(f"{API_URL}/scrape")
+    return _safe_post(
+        f"{API_URL}/scrape",
+        params={"source": "all"},
+        timeout=180,
+    )
 
 
 def fetch_scraping_logs(limit: int = 10) -> Optional[List[Dict[str, Any]]]:

@@ -8,6 +8,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 
 from src.scrapers.hamag_scraper import HAMAGBICROScraper
 from src.scrapers.hrzz_scraper import HRZZScraper
+from src.scrapers.cordis_scraper import CORDISScraper
 from src.database.database import get_db_session
 from src.database.crud import (
     get_or_create_izdavatelj,
@@ -25,6 +26,7 @@ class ScraperManager:
         self.scrapers = {
             'HAMAG-BICRO': HAMAGBICROScraper(),
             'HRZZ': HRZZScraper(),
+            'CORDIS': CORDISScraper(),
         }
     
     def run_all_scrapers(self) -> Dict:
@@ -111,33 +113,42 @@ class ScraperManager:
     def save_to_database(self, source_name: str, natjecaji: List[Dict]) -> Dict:
         """Save scraped natjecaji to database"""
         stats = {'added': 0, 'updated': 0, 'skipped': 0}
+        natjecaj_columns = set(Natjecaj.__table__.columns.keys())
         
         with get_db_session() as db:
             # Get or create izdavatelj
             izdavatelj = get_or_create_izdavatelj(
                 db,
                 naziv=source_name,
-                tip="national" if source_name in ['HAMAG-BICRO', 'HRZZ'] else "international"
+                tip="national" if source_name in ['HAMAG-BICRO', 'HRZZ'] else "international",
+                url="https://cordis.europa.eu" if source_name == 'CORDIS' else None,
+                opis="EU Research Portal - Horizon Europe, ERC, MSCA and other EU funding calls" if source_name == 'CORDIS' else None,
             )
             
             for natjecaj_data in natjecaji:
                 try:
+                    sanitized_data = {
+                        key: value
+                        for key, value in natjecaj_data.items()
+                        if key in natjecaj_columns
+                    }
+
                     # Check if natjecaj already exists (by URL, then naziv for same izdavatelj)
                     existing = None
-                    if natjecaj_data.get('url'):
+                    if sanitized_data.get('url'):
                         existing = db.query(Natjecaj).filter(
-                            Natjecaj.url == natjecaj_data.get('url')
+                            Natjecaj.url == sanitized_data.get('url')
                         ).first()
 
                     if not existing:
                         existing = db.query(Natjecaj).filter(
                             Natjecaj.izdavatelj_id == izdavatelj.id,
-                            Natjecaj.naziv == natjecaj_data.get('naziv')
+                            Natjecaj.naziv == sanitized_data.get('naziv')
                         ).first()
                     
                     if existing:
                         # Update existing
-                        for key, value in natjecaj_data.items():
+                        for key, value in sanitized_data.items():
                             setattr(existing, key, value)
                         existing.updated_at = datetime.utcnow()
                         stats['updated'] += 1
@@ -146,7 +157,7 @@ class ScraperManager:
                         create_natjecaj(
                             db,
                             izdavatelj_id=izdavatelj.id,
-                            **natjecaj_data
+                            **sanitized_data
                         )
                         stats['added'] += 1
                         
