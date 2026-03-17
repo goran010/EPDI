@@ -33,7 +33,10 @@ app.add_middleware(
 
 # Initialize services
 llm_service = LLMService()
-scraper_manager = ScraperManager()
+
+
+def _get_scraper_manager() -> ScraperManager:
+    return ScraperManager()
 
 
 # ==================== PYDANTIC SCHEMAS ====================
@@ -215,6 +218,7 @@ def generate_summary(natjecaj_id: int, db: Session = Depends(get_db)):
 def trigger_scraping(source: Optional[str] = None):
     """Trigger web scraping manually"""
     try:
+        scraper_manager = _get_scraper_manager()
         normalized_source = source.strip() if source else None
 
         if normalized_source and normalized_source.lower() not in {"all", "*"}:

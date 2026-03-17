@@ -9,6 +9,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 from src.scrapers.hamag_scraper import HAMAGBICROScraper
 from src.scrapers.hrzz_scraper import HRZZScraper
 from src.scrapers.cordis_scraper import CORDISScraper
+from src.scrapers.mingo_scraper import MINGOScraper
 from src.database.database import get_db_session
 from src.database.crud import (
     get_or_create_izdavatelj,
@@ -27,6 +28,7 @@ class ScraperManager:
             'HAMAG-BICRO': HAMAGBICROScraper(),
             'HRZZ': HRZZScraper(),
             'CORDIS': CORDISScraper(),
+            'MINGO': MINGOScraper(),
         }
     
     def run_all_scrapers(self) -> Dict:

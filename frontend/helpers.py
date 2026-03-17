@@ -51,6 +51,20 @@ def _safe_post(
         return False
 
 
+def _safe_post_json(
+    url: str,
+    params: Optional[Dict[str, Any]] = None,
+    timeout: int = 30,
+) -> Optional[Any]:
+    try:
+        response = requests.post(url, params=params, timeout=timeout)
+        if response.status_code == 200:
+            return response.json()
+    except requests.RequestException:
+        return None
+    return None
+
+
 def parse_rok(rok_prijave: Optional[str]) -> Optional[datetime]:
     if not rok_prijave:
         return None
@@ -73,7 +87,6 @@ def safe_text(value: Any) -> str:
     return html.escape(str(value))
 
 
-@st.cache_data(ttl=300)
 def fetch_statistics() -> Optional[Dict[str, Any]]:
     data = _safe_get(f"{API_URL}/statistics")
     if isinstance(data, dict):
@@ -89,7 +102,6 @@ def fetch_natjecaji(active_only: bool = False) -> List[Dict[str, Any]]:
     return []
 
 
-@st.cache_data(ttl=300)
 def fetch_expiring_soon(days: int = 30) -> List[Dict[str, Any]]:
     data = _safe_get(f"{API_URL}/natjecaji/expiring/soon", params={"days": days})
     if isinstance(data, list):
@@ -122,6 +134,13 @@ def trigger_scraping() -> bool:
         params={"source": "all"},
         timeout=180,
     )
+
+
+def generate_ai_summary(natjecaj_id: int) -> Optional[Dict[str, Any]]:
+    data = _safe_post_json(f"{API_URL}/natjecaji/{natjecaj_id}/summary", timeout=60)
+    if isinstance(data, dict):
+        return data
+    return None
 
 
 def fetch_scraping_logs(limit: int = 10) -> Optional[List[Dict[str, Any]]]:

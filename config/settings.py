@@ -52,6 +52,10 @@ DATA_SOURCES = {
         {
             "name": "HRZZ",
             "url": "https://hrzz.hr/natjecaji/",
+        },
+        {
+            "name": "MINGO",
+            "url": "https://mingo.gov.hr/javni-pozivi-i-natjecaji-7371/javni-pozivi-i-natjecaji-ministarstva/otvoreni-javni-pozivi-i-natjecaji/7390",
             "type": "html",
             "enabled": True
         }

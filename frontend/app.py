@@ -10,6 +10,7 @@ from helpers import (
     fetch_scraping_logs,
     fetch_statistics,
     format_iznos,
+    generate_ai_summary,
     load_css,
     parse_rok,
     render_template,
@@ -134,6 +135,8 @@ def show_search_page():
         st.session_state.search_results = []
     if "search_page" not in st.session_state:
         st.session_state.search_page = 0
+    if "ai_summaries" not in st.session_state:
+        st.session_state.ai_summaries = {}
 
     with st.form("search_form", clear_on_submit=False):
         col1, col2, col3 = st.columns(3)
@@ -185,6 +188,7 @@ def show_search_page():
         # Render current page items
         page_items = results[page * PAGE_SIZE : (page + 1) * PAGE_SIZE]
         for nat in page_items:
+            natjecaj_id = nat.get("id")
             opis = nat.get('opis') or "Bez opisa"
             short_opis = opis[:220] + ("..." if len(opis) > 220 else "")
             rok = parse_rok(nat.get("rok_prijave"))
@@ -204,6 +208,38 @@ def show_search_page():
                 ),
                 unsafe_allow_html=True,
             )
+
+            if natjecaj_id is not None:
+                action_col, info_col = st.columns([1.1, 3.9])
+                with action_col:
+                    if st.button("Generiraj AI sažetak", key=f"ai_summary_{natjecaj_id}", use_container_width=True):
+                        with st.spinner("Generiram AI sažetak..."):
+                            summary_response = generate_ai_summary(int(natjecaj_id))
+                        if summary_response and isinstance(summary_response.get("summary"), dict):
+                            st.session_state.ai_summaries[natjecaj_id] = summary_response
+                        else:
+                            st.error("AI sažetak nije moguće generirati.")
+
+                with info_col:
+                    cached_summary = st.session_state.ai_summaries.get(natjecaj_id)
+                    if cached_summary and isinstance(cached_summary.get("summary"), dict):
+                        summary = cached_summary["summary"]
+                        disclaimer = cached_summary.get(
+                            "disclaimer",
+                            "AI-generirani sadržaj - provjerite službenu dokumentaciju",
+                        )
+                        st.markdown(
+                            "<div class='ai-summary-card'>"
+                            "<div class='ai-summary-title'>AI sažetak</div>"
+                            f"<div class='ai-summary-text'>{safe_text(summary.get('sazetek', 'N/A'))}</div>"
+                            f"<div class='ai-summary-meta'><strong>Ključne riječi:</strong> {safe_text(summary.get('kljucne_rijeci', 'N/A'))}</div>"
+                            f"<div class='ai-summary-meta'><strong>Relevantnost:</strong> {safe_text(summary.get('preporuka_relevantnosti', 'N/A'))}</div>"
+                            f"<div class='ai-summary-disclaimer'>{safe_text(disclaimer)}</div>"
+                            "</div>",
+                            unsafe_allow_html=True,
+                        )
+
+            st.markdown("<div style='height:0.35rem'></div>", unsafe_allow_html=True)
 
         # Pagination controls
         if total_pages > 1:
@@ -344,6 +380,35 @@ def show_admin_page():
     if logs is not None:
         if logs:
             df_logs = pd.DataFrame(logs)
+
+            source_root_links = {
+                "HAMAG-BICRO": "https://hamagbicro.hr",
+                "HRZZ": "https://hrzz.hr",
+                "CORDIS": "https://cordis.europa.eu",
+                "MINGO": "https://mingo.gov.hr",
+            }
+
+            if "izvor" in df_logs.columns:
+                df_logs["izvor_root_link"] = df_logs["izvor"].map(source_root_links)
+                if "url" in df_logs.columns:
+                    df_logs["izvor_root_link"] = df_logs["url"].fillna(df_logs["izvor_root_link"])
+                df_logs = df_logs.drop(columns=["izvor"], errors="ignore")
+
+                preferred_order = [
+                    "izvor_root_link",
+                    "status",
+                    "natjecaji_pronadeni",
+                    "natjecaji_dodani",
+                    "natjecaji_azurirani",
+                    "execution_time",
+                    "created_at",
+                    "error_message",
+                    "id",
+                ]
+                existing_order = [col for col in preferred_order if col in df_logs.columns]
+                remaining_cols = [col for col in df_logs.columns if col not in existing_order]
+                df_logs = df_logs[existing_order + remaining_cols]
+
             st.dataframe(df_logs, use_container_width=True, hide_index=True)
         else:
             st.info("Nema zapisa o scrapingu.")

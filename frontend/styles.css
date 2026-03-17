@@ -126,6 +126,38 @@ div[data-testid="stRadio"] label:has(input:checked) p {
   font-weight: 600;
 }
 
+.ai-summary-card {
+  border: 1px solid rgba(255, 75, 75, 0.22);
+  border-radius: 12px;
+  padding: 0.85rem 1rem;
+  margin: 0.15rem 0 0.8rem 0;
+  background: rgba(255, 75, 75, 0.06);
+}
+
+.ai-summary-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  margin-bottom: 0.35rem;
+}
+
+.ai-summary-text {
+  font-size: 0.92rem;
+  margin-bottom: 0.45rem;
+  line-height: 1.45;
+}
+
+.ai-summary-meta {
+  font-size: 0.88rem;
+  margin-bottom: 0.2rem;
+  opacity: 0.92;
+}
+
+.ai-summary-disclaimer {
+  font-size: 0.82rem;
+  margin-top: 0.45rem;
+  opacity: 0.8;
+}
+
 @media (max-width: 980px) {
   .top-nav-stats {
     text-align: left;
